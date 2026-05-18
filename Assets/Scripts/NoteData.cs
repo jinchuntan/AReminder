@@ -19,6 +19,32 @@ public class NoteData
     public string colorLabelId;   // matches an entry in NoteStyleCatalog.ColorLabels
     public int icon;              // 0 = None ... see NoteIcon
 
+    public string reminderTime;      // Saved in format: "yyyy-MM-dd HH:mm:ss"
+    public bool reminderDismissed;   // True if the alarm already went off and was dismissed
+
+    // Helper to see if the deadline has passed
+    public bool IsOverdue()
+    {
+        if (string.IsNullOrEmpty(reminderTime)) return false;
+        if (System.DateTime.TryParse(reminderTime, out System.DateTime parsedTime))
+        {
+            return System.DateTime.Now > parsedTime;
+        }
+        return false;
+    }
+
+    // Helper to check if a deadline is close (e.g., within the next 60 minutes)
+    public bool IsDueSoon()
+    {
+        if (string.IsNullOrEmpty(reminderTime)) return false;
+        if (System.DateTime.TryParse(reminderTime, out System.DateTime parsedTime))
+        {
+            System.TimeSpan difference = parsedTime - System.DateTime.Now;
+            return difference.TotalMinutes > 0 && difference.TotalMinutes <= 60;
+        }
+        return false;
+    }
+
     public NoteData(string title, string content)
     {
         noteId = Guid.NewGuid().ToString();

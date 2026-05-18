@@ -1,4 +1,5 @@
 using UnityEngine;
+using System;
 
 // Developer-only keyboard tester used to verify backend CRUD without UI.
 // Press A/E/C/T/H/D/X/L in Play Mode and watch the Console.
@@ -23,10 +24,12 @@ public class NoteManagerTester : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.A))
         {
             NoteData note = NoteManager.Instance.AddNote(addTitle, addContent);
-
             testNoteId = note.noteId;
-
             Debug.Log("TEST: Created note with ID: " + testNoteId);
+
+            System.DateTime targetTime = System.DateTime.Now.AddSeconds(10);
+            string formattedTime = targetTime.ToString("yyyy-MM-dd HH:mm:ss");
+            NoteManager.Instance.SetNoteReminder(testNoteId, formattedTime);
         }
 
         if (Input.GetKeyDown(KeyCode.E))

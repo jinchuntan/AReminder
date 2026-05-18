@@ -35,6 +35,7 @@ public class ProfessionalNoteUIController : MonoBehaviour
     private TMP_InputField titleInput;
     private TMP_InputField contentInput;
     private TMP_InputField checklistInput;
+    private TMP_InputField reminderInput;
     private RectTransform notesListContent;
     private TextMeshProUGUI emptyHint;
     private TextMeshProUGUI selectedNoteCaption;
@@ -303,20 +304,66 @@ public class ProfessionalNoteUIController : MonoBehaviour
 
     private void BuildActionButtons(Transform parent, float padX, ref float y)
     {
+        var inputLabel = AddText(parent, "ReminderInputLabel", "Set Reminder (YYYY-MM-DD HH:MM:SS)", 18, FontStyles.Bold, ColMuted);
+        inputLabel.characterSpacing = 8;
+        PlaceTopLeft(inputLabel.rectTransform, padX, y, 600, 22);
+        y -= 28;
+
+        reminderInput = AddInput(parent, "ReminderInput", "", "e.g., 2026-05-18 20:30:00", isMultiLine: false);
+        PlaceTopLeft(reminderInput.GetComponent<RectTransform>(), padX, y, 450, 44);
+        y -= 52;
+
         float h = 64, gap = 12;
         float x = padX;
 
         Button add = AddSolidButton(parent, "AddBtn", "Add Note", ColAccent, ColTextHi, OnAdd);
-        PlaceTopLeft(add.GetComponent<RectTransform>(), x, y, 220, h); x += 220 + gap;
+        PlaceTopLeft(add.GetComponent<RectTransform>(), x, y, 160, h); x += 160 + gap;
 
         Button edit = AddSolidButton(parent, "EditBtn", "Save Edit", ColSuccess, ColTextHi, OnEdit);
-        PlaceTopLeft(edit.GetComponent<RectTransform>(), x, y, 220, h); x += 220 + gap;
+        PlaceTopLeft(edit.GetComponent<RectTransform>(), x, y, 160, h); x += 160 + gap;
 
         Button hide = AddSolidButton(parent, "HideBtn", "Hide / Show", ColPanelSoft, ColTextHi, OnToggleVisibility);
-        PlaceTopLeft(hide.GetComponent<RectTransform>(), x, y, 220, h); x += 220 + gap;
+        PlaceTopLeft(hide.GetComponent<RectTransform>(), x, y, 160, h); x += 160 + gap;
 
         Button del = AddSolidButton(parent, "DelBtn", "Delete", ColDanger, ColTextHi, OnDelete);
-        PlaceTopLeft(del.GetComponent<RectTransform>(), x, y, 220, h);
+        PlaceTopLeft(del.GetComponent<RectTransform>(), x, y, 160, h); x += 160 + gap;
+
+        Button alarm = AddSolidButton(parent, "AlarmBtn", "Set Reminder", new Color(0.2f, 0.45f, 0.75f), ColTextHi, () => {
+            Debug.Log("Processing reminder string target");
+            
+            var notes = (NoteManager.Instance != null) ? NoteManager.Instance.GetAllNotes() : null;
+            string targetNoteId = "";
+
+            if (!string.IsNullOrEmpty(selectedNoteId)) {
+                targetNoteId = selectedNoteId;
+            }
+            else if (notes != null && notes.Count > 0) {
+                targetNoteId = notes[notes.Count - 1].noteId;
+            }
+            else {
+                NoteData dummyNote = NoteManager.Instance.AddNote("UI Timestamp Note", "Automatically generated container.");
+                targetNoteId = dummyNote.noteId;
+            }
+
+            string timeToSchedule = "";
+
+            if (reminderInput != null && !string.IsNullOrWhiteSpace(reminderInput.text))
+            {
+                timeToSchedule = reminderInput.text;
+                Debug.Log($"[SYSTEM] Registering manual string target: {timeToSchedule}");
+            }
+            else
+            {
+                System.DateTime targetTime = System.DateTime.Now.AddSeconds(10);
+                timeToSchedule = targetTime.ToString("yyyy-MM-dd HH:mm:ss");
+                if (reminderInput != null) reminderInput.text = timeToSchedule;
+                Debug.Log($"[SYSTEM] Input empty. Defaulting to 10-second test timestamp: {timeToSchedule}");
+            }
+
+            NoteManager.Instance.SetNoteReminder(targetNoteId, timeToSchedule);
+        });
+        
+        PlaceTopLeft(alarm.GetComponent<RectTransform>(), x, y, 180, h);
 
         y -= h + 4;
     }

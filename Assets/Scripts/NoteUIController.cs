@@ -1,5 +1,7 @@
 using TMPro;
 using UnityEngine;
+using System;
+using System.Collections.Generic;
 
 public class NoteUIController : MonoBehaviour
 {
@@ -7,6 +9,7 @@ public class NoteUIController : MonoBehaviour
     [SerializeField] private TMP_InputField titleInput;
     [SerializeField] private TMP_InputField contentInput;
     [SerializeField] private TMP_InputField checklistInput;
+    [SerializeField] private TMP_InputField reminderInput;
 
     private string selectedNoteId;
 
@@ -142,10 +145,44 @@ public class NoteUIController : MonoBehaviour
         Debug.Log("UI: Toggled first checklist item for note with ID: " + selectedNoteId);
     }
 
+public void SetReminderFromUI()
+    {
+        if (string.IsNullOrEmpty(selectedNoteId))
+        {
+            List<NoteData> allNotes = NoteManager.Instance.GetAllNotes();
+            if (allNotes != null && allNotes.Count > 0)
+            {
+                selectedNoteId = allNotes[allNotes.Count - 1].noteId;
+            }
+            else
+            {
+                NoteData dummy = NoteManager.Instance.AddNote("UI Input Test Note", "Created automatically.");
+                selectedNoteId = dummy.noteId;
+            }
+        }
+
+        string timeToSchedule = "";
+        if (reminderInput != null && !string.IsNullOrWhiteSpace(reminderInput.text))
+        {
+            timeToSchedule = reminderInput.text;
+            Debug.Log($"[UI] Using user custom time input: {timeToSchedule}");
+        }
+        else
+        {
+            DateTime targetTime = DateTime.Now.AddSeconds(10);
+            timeToSchedule = targetTime.ToString("yyyy-MM-dd HH:mm:ss");
+            if (reminderInput != null) reminderInput.text = timeToSchedule;
+            Debug.Log($"[UI] Input empty! Defaulting to a quick 10-second alarm: {timeToSchedule}");
+        }
+
+        NoteManager.Instance.SetNoteReminder(selectedNoteId, timeToSchedule);
+    }
+
     private void ClearInputs()
     {
         titleInput.text = "";
         contentInput.text = "";
         checklistInput.text = "";
+        if (reminderInput != null) reminderInput.text = "";
     }
 }

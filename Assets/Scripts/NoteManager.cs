@@ -227,4 +227,28 @@ public class NoteManager : MonoBehaviour
             OnNotesChanged();
         }
     }
+
+    public void SetNoteReminder(string noteId, string dateTimeString)
+    {
+        NoteData note = FindNoteById(noteId);
+        if (note == null) { Debug.LogWarning("SetNoteReminder failed: " + noteId); return; }
+
+        note.reminderTime = dateTimeString;
+        note.reminderDismissed = false; // Reset dismissal state for the new time
+        note.updatedAt = System.DateTime.Now.ToString();
+        SaveNotes();
+        Debug.Log("Reminder scheduled for Note: " + noteId + " at " + dateTimeString);
+        RaiseChanged();
+    }
+
+    public void DismissNoteReminder(string noteId)
+    {
+        NoteData note = FindNoteById(noteId);
+        if (note != null)
+        {
+            note.reminderDismissed = true;
+            SaveNotes();
+            RaiseChanged();
+        }
+    }
 }
