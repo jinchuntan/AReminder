@@ -7,6 +7,13 @@ public class ARPlaceNote : MonoBehaviour
 {
     [SerializeField] private GameObject notePrefab;
 
+    // Optional fallback label shown when the user has not given the note a
+    // title yet. Left empty by default so we do not inject any preset
+    // content into the user's data; the UI's NoteObject will render
+    // "(untitled)" for empty titles.
+    [SerializeField] private string emptyTitleFallback = "";
+    [SerializeField] private string emptyContentFallback = "";
+
     private ARRaycastManager raycastManager;
     private readonly List<ARRaycastHit> hits = new List<ARRaycastHit>();
 
@@ -31,9 +38,11 @@ public class ARPlaceNote : MonoBehaviour
 
             GameObject noteObject = Instantiate(notePrefab, pose.position, pose.rotation);
 
+            // Create the note with empty fields by default so the user is
+            // not bombarded with hard-coded "New Note" placeholders.
             NoteData newNote = NoteManager.Instance.AddNote(
-                "New Note",
-                "Tap to edit this note"
+                emptyTitleFallback,
+                emptyContentFallback
             );
 
             NoteObject noteComponent = noteObject.GetComponent<NoteObject>();

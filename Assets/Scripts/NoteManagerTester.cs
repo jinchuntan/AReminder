@@ -1,17 +1,28 @@
 using UnityEngine;
 
+// Developer-only keyboard tester used to verify backend CRUD without UI.
+// Press A/E/C/T/H/D/X/L in Play Mode and watch the Console.
+//
+// All test strings below are SerializeFields so QA / reviewers can change
+// them (or empty them) from the Inspector without touching the script.
+// They are NOT preset content for end users - this component should be
+// disabled or removed before shipping.
 public class NoteManagerTester : MonoBehaviour
 {
+    [Header("Test data (editable from Inspector)")]
+    [SerializeField] private string addTitle      = "Backend Test Note";
+    [SerializeField] private string addContent    = "This note was created by pressing A.";
+    [SerializeField] private string editTitle     = "Edited Backend Test Note";
+    [SerializeField] private string editContent   = "This note was edited by pressing E.";
+    [SerializeField] private string checklistText = "First checklist item";
+
     private string testNoteId;
 
     private void Update()
     {
         if (Input.GetKeyDown(KeyCode.A))
         {
-            NoteData note = NoteManager.Instance.AddNote(
-                "Backend Test Note",
-                "This note was created by pressing A."
-            );
+            NoteData note = NoteManager.Instance.AddNote(addTitle, addContent);
 
             testNoteId = note.noteId;
 
@@ -26,11 +37,7 @@ public class NoteManagerTester : MonoBehaviour
                 return;
             }
 
-            NoteManager.Instance.EditNote(
-                testNoteId,
-                "Edited Backend Test Note",
-                "This note was edited by pressing E."
-            );
+            NoteManager.Instance.EditNote(testNoteId, editTitle, editContent);
 
             Debug.Log("TEST: Edited note with ID: " + testNoteId);
         }
@@ -43,10 +50,7 @@ public class NoteManagerTester : MonoBehaviour
                 return;
             }
 
-            NoteManager.Instance.AddChecklistItem(
-                testNoteId,
-                "First checklist item"
-            );
+            NoteManager.Instance.AddChecklistItem(testNoteId, checklistText);
 
             Debug.Log("TEST: Added checklist item to note with ID: " + testNoteId);
         }

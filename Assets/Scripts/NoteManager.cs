@@ -8,6 +8,9 @@ public class NoteManager : MonoBehaviour
 
     public List<NoteData> notes = new List<NoteData>();
 
+    // Fired whenever the note list changes so the UI / AR layers can refresh.
+    public event Action OnNotesChanged;
+
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -18,6 +21,22 @@ public class NoteManager : MonoBehaviour
 
         Instance = this;
         notes = NoteStorage.LoadNotes();
+
+        // Backfill defaults for notes loaded from old JSON files that did
+        // not have priority / colour / icon yet. We only normalise nulls
+        // (so the JSON stays valid) without injecting any specific user
+        // styling - the StyleCatalog will pick a fallback colour at render
+        // time when colorLabelId is empty.
+        for (int i = 0; i < notes.Count; i++)
+        {
+            NoteData n = notes[i];
+            if (n.colorLabelId == null)
+            {
+                n.colorLabelId = string.Empty;
+            }
+            // priority defaults to 0 (Low) and icon to 0 (None) when missing,
+            // which is fine - both already have safe rendering paths.
+        }
     }
 
     public NoteData AddNote(string title, string content)
@@ -27,6 +46,7 @@ public class NoteManager : MonoBehaviour
         SaveNotes();
 
         Debug.Log("Note added: " + newNote.noteId);
+        RaiseChanged();
         return newNote;
     }
 
@@ -46,6 +66,7 @@ public class NoteManager : MonoBehaviour
 
         SaveNotes();
         Debug.Log("Note edited: " + noteId);
+        RaiseChanged();
     }
 
     public void DeleteNote(string noteId)
@@ -62,6 +83,7 @@ public class NoteManager : MonoBehaviour
         SaveNotes();
 
         Debug.Log("Note deleted: " + noteId);
+        RaiseChanged();
     }
 
     public void ToggleNoteVisibility(string noteId)
@@ -79,6 +101,7 @@ public class NoteManager : MonoBehaviour
 
         SaveNotes();
         Debug.Log("Note visibility changed to: " + note.isVisible);
+        RaiseChanged();
     }
 
     public void AddChecklistItem(string noteId, string itemText)
@@ -102,6 +125,7 @@ public class NoteManager : MonoBehaviour
 
         SaveNotes();
         Debug.Log("Checklist item added to note: " + noteId);
+        RaiseChanged();
     }
 
     public void ToggleChecklistItem(string noteId, int itemIndex)
@@ -130,7 +154,48 @@ public class NoteManager : MonoBehaviour
             "Checklist item toggled for note: " + noteId +
             " | Completed: " + note.checklistItems[itemIndex].isCompleted
         );
+        RaiseChanged();
     }
+
+    // ---- Custom styling API ------------------------------------------------
+
+    public void SetNotePriority(string noteId, NotePriority priority)
+    {
+        NoteData note = FindNoteById(noteId);
+        if (note == null) { Debug.LogWarning("SetPriority failed: " + noteId); return; }
+
+        note.Priority = priority;
+        note.updatedAt = DateTime.Now.ToString();
+        SaveNotes();
+        Debug.Log("Note priority set: " + noteId + " -> " + priority);
+        RaiseChanged();
+    }
+
+    public void SetNoteColor(string noteId, string colorLabelId)
+    {
+        NoteData note = FindNoteById(noteId);
+        if (note == null) { Debug.LogWarning("SetColor failed: " + noteId); return; }
+
+        note.colorLabelId = colorLabelId;
+        note.updatedAt = DateTime.Now.ToString();
+        SaveNotes();
+        Debug.Log("Note color set: " + noteId + " -> " + colorLabelId);
+        RaiseChanged();
+    }
+
+    public void SetNoteIcon(string noteId, NoteIcon icon)
+    {
+        NoteData note = FindNoteById(noteId);
+        if (note == null) { Debug.LogWarning("SetIcon failed: " + noteId); return; }
+
+        note.Icon = icon;
+        note.updatedAt = DateTime.Now.ToString();
+        SaveNotes();
+        Debug.Log("Note icon set: " + noteId + " -> " + icon);
+        RaiseChanged();
+    }
+
+    // -----------------------------------------------------------------------
 
     public NoteData FindNoteById(string noteId)
     {
@@ -152,5 +217,14 @@ public class NoteManager : MonoBehaviour
         notes.Clear();
         NoteStorage.ClearNotes();
         Debug.Log("All notes cleared.");
+        RaiseChanged();
+    }
+
+    private void RaiseChanged()
+    {
+        if (OnNotesChanged != null)
+        {
+            OnNotesChanged();
+        }
     }
 }

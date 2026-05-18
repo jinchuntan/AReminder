@@ -1557,6 +1557,7 @@ GameObject:
   m_Component:
   - component: {fileID: 917476989}
   - component: {fileID: 917476990}
+  - component: {fileID: 917476991}
   m_Layer: 5
   m_Name: NoteUIController
   m_TagString: Untagged
@@ -4113,3 +4114,15 @@ SceneRoots:
   - {fileID: 296318975}
   - {fileID: 1363861304}
   - {fileID: 1487708846}
+--- !u!114 &917476991
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917476988}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7a4385ac93f43ca7de23cc3a765a1d8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
