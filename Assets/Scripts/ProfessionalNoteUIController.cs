@@ -302,7 +302,7 @@ public class ProfessionalNoteUIController : MonoBehaviour
         y -= 70;
     }
 
-private void BuildActionButtons(Transform parent, float padX, ref float y)
+    private void BuildActionButtons(Transform parent, float padX, ref float y)
     {
         var inputLabel = AddText(parent, "ReminderInputLabel", "Set Reminder (YYYY-MM-DD HH:MM:SS)", 18, FontStyles.Bold, ColMuted);
         inputLabel.characterSpacing = 8;
